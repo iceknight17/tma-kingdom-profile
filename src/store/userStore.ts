@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type GameUser = {
+export type GameUser = {
   id: number;
   username?: string;
   fullname: string;
