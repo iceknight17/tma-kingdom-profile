@@ -6,6 +6,7 @@ import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import './index.css'
 
 WebApp.ready();
+WebApp.backgroundColor = '#fff';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 <TonConnectUIProvider manifestUrl="/assets/tonconnect-manifest.json" actionsConfiguration={{ twaReturnUrl: 'https://t.me/happpydaybot' }}>
