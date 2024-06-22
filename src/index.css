@@ -54,8 +54,6 @@ body{
 }
 
 .user__placeholder {
-    width: 38px;
-    height: 38px;
     padding: 0.5rem;
     color: white;
     place-items: center;
@@ -63,6 +61,20 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.ton-wallet-btn, .ton-wallet-btn>div, .ton-wallet-btn button {
+    width: 100% !important;
+}
+
+.ton-wallet-btn button {
+    display: flex;
+    justify-content: center;
+    height: 52px;
 }
   
 @keyframes spin-tails{

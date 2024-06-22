@@ -11,5 +11,5 @@ export const generatePlaceholderName = (name: string) => {
 }
 
 export function formattedBalance(balance: number) {
-    return (balance / 1e9).toLocaleString('en-US', {maximumFractionDigits: 3});
+    return balance.toLocaleString('en-US', {maximumFractionDigits: 3});
 }
