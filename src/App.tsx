@@ -60,7 +60,9 @@ function App() {
   }
 
   const onConnectWallet = async () => {
-    // TODO: update wallet address on backend
+    getBanace(userFriendlyAddress).then((bal) => {
+      setBalance(bal);
+    });
     const response = await fetch(`${import.meta.env.VITE_API_URL}/setwallet`, {
       method: 'POST',
       headers: {
@@ -76,15 +78,12 @@ function App() {
       if(result.success) {
         // TODO: set current user
         console.log('connected wallet', result);
+        setCurrentUser({
+          ...currentUser!,
+          wallet_address: userFriendlyAddress
+        });
       }
     }
-    setCurrentUser({
-      ...currentUser!,
-      wallet_address: userFriendlyAddress
-    });
-    getBanace(userFriendlyAddress).then((bal) => {
-      setBalance(bal);
-    });
   }
 
   const doDeposit = () => {
@@ -134,7 +133,7 @@ function App() {
   return (
     <>
     <div className="w-full h-screen flex flex-col p-6 z-10 relative">
-      {!currentUser?.wallet_address ? 
+      {!userFriendlyAddress ? 
         <div className='w-full mt-2 flex flex-col flex-1 justify-between'>
           <h3 className='font-bold text-gray-900 text-center text-3xl mt-12'>Ton Stars</h3>
           <div>
@@ -148,7 +147,7 @@ function App() {
             <TonConnectButton className='ton-wallet-btn mb-8' />
           </div>
         </div> :
-        <div className="w-full mt-2 flex flex-col flex-1 justify-between">
+        (currentUser && <div className="w-full mt-2 flex flex-col flex-1 justify-between">
           <div className='w-full flex flex-col items-center pt-12'>
             <UserNameAvatar name={currentUser?.fullname!} className="w-24 h-24 text-5xl" />
             <p className='cursor-pointer text-xl text-blue-500 mt-2 font-medium'>Edit profile image</p>
@@ -220,7 +219,7 @@ function App() {
               </button>
             </div>
           </div>
-        </div>
+        </div>)
       }
     </div>
   </>
