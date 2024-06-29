@@ -100,7 +100,7 @@ function App() {
   }
 
   const onDeposit = async () => {
-    if(MIN < balance && balance > MAX){
+    if(MIN < depositAmount && depositAmount > MAX){
       WebApp.showAlert(`Deposit amount must be less than ${MIN}TON and greater than ${MAX}TON!`);
       return;
     }else{
@@ -112,7 +112,7 @@ function App() {
   }
 
   const onWithdraw = async () => {
-    if(MIN < balance && balance > MAX){
+    if(MIN < withdrawAmount && withdrawAmount > MAX){
       WebApp.showAlert(`Withdraw amount must be less than ${MIN}TON and greater than ${MAX}TON!`);
       return;
     }else{
@@ -121,7 +121,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({currentUser, withdrawAmount})
       });
       if(response.ok) {
         const result = await response.json();
