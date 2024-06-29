@@ -39,11 +39,10 @@ function App() {
   
   const getBanace = async (addr: string): Promise<number> => {
     const response = await fetch(GET_BALANCE_API.replace('AAA', addr));
-    if(response.ok) {
+    if(response.status == 200) {
       const result = await response.json();
-      if (result.ok) {
-        return parseFloat(result.result.balance);
-      }
+      console.log('**************', result);
+      return parseFloat(result.result.balance);
     }
     return 0;
   }
@@ -57,7 +56,7 @@ function App() {
       body: JSON.stringify(user)
     });
     console.log('response', response);
-    if(response.ok) {
+    if(response.status == 200) {
       const result = await response.json();
       localStorage.setItem('current_user', JSON.stringify(result));
       setCurrentUser(result);
@@ -79,7 +78,7 @@ function App() {
       })
     });
     console.log('connected wallet', response);
-    if(response.ok) {
+    if(response.status == 200) {
       setCurrentUser({
         ...currentUser!,
         wallet_address: userFriendlyAddress
@@ -125,7 +124,7 @@ function App() {
         },
         body: JSON.stringify({currentUser, withdrawAmount})
       });
-      if(response.ok) {
+      if(response.status == 200) {
         const result = await response.json();
         console.log(result);
       }
