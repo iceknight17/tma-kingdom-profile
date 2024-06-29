@@ -100,7 +100,7 @@ function App() {
   }
 
   const onDeposit = async () => {
-    if(MIN < depositAmount && depositAmount > MAX){
+    if(MIN < parseInt(depositAmount) && parseInt(depositAmount) > MAX){
       WebApp.showAlert(`Deposit amount must be less than ${MIN}TON and greater than ${MAX}TON!`);
       return;
     }else{
@@ -112,7 +112,7 @@ function App() {
   }
 
   const onWithdraw = async () => {
-    if(MIN < withdrawAmount && withdrawAmount > MAX){
+    if(MIN < parseInt(withdrawAmount) && parseInt(withdrawAmount) > MAX){
       WebApp.showAlert(`Withdraw amount must be less than ${MIN}TON and greater than ${MAX}TON!`);
       return;
     }else{
