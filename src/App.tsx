@@ -8,7 +8,7 @@ import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui
 
 function App() {
   const {currentUser, setCurrentUser} = useUserStore();
-  const [balance, setBalance] = useState<number>(3000);
+  const [balance, setBalance] = useState<number>(0);
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const MIN = 200, MAX = 100000;
@@ -32,12 +32,18 @@ function App() {
   }, [initData, currentUser]);
 
   useEffect(() => {
-    if(userFriendlyAddress && currentUser && !currentUser.wallet_address) {
-      onConnectWallet();
+    if(userFriendlyAddress) {
+      if(currentUser && !currentUser.wallet_address) {
+        onConnectWallet();
+      }else{
+        getBalance(currentUser?.wallet_address!).then((bal) => {
+          setBalance(bal);
+        });
+      }
     }
   }, [userFriendlyAddress]);
   
-  const getBanace = async (addr: string): Promise<number> => {
+  const getBalance = async (addr: string): Promise<number> => {
     const response = await fetch(GET_BALANCE_API.replace('AAA', addr));
     if(response.status == 200) {
       const result = await response.json();
@@ -64,7 +70,7 @@ function App() {
   }
 
   const onConnectWallet = async () => {
-    getBanace(userFriendlyAddress).then((bal) => {
+    getBalance(userFriendlyAddress).then((bal) => {
       setBalance(bal);
     });
     const response = await fetch(`${import.meta.env.VITE_API_URL}/setwallet`, {
