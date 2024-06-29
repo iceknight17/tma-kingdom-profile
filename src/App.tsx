@@ -18,15 +18,21 @@ function App() {
   const GET_BALANCE_API = import.meta.env.VITE_GET_BALANCE_API;
   const DESTINATION_WALLET_ADDRESS = import.meta.env.VITE_DESTINATION_WALLET_ADDRESS;
 
+  useEffect(() =>{
+    const storedUser = localStorage.getItem('current_user');
+    if(storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   useEffect(() => {
-    if(initData && !currentUser?.wallet_address) {
-      console.log('<<<>>>', initData, currentUser);
+    if(initData && !currentUser) {
       fetchCurrentUser(initData.user);
     }
   }, [initData, currentUser]);
 
   useEffect(() => {
-    if(userFriendlyAddress) {
+    if(userFriendlyAddress && currentUser && !currentUser.wallet_address) {
       onConnectWallet();
     }
   }, [userFriendlyAddress]);
@@ -50,12 +56,11 @@ function App() {
       },
       body: JSON.stringify(user)
     });
+    console.log('response', response);
     if(response.ok) {
       const result = await response.json();
-      if(result.success) {
-        // TODO: set current user
-        console.log('result', result);
-      }
+      localStorage.setItem('current_user', JSON.stringify(result));
+      setCurrentUser(result);
     }
   }
 
@@ -73,16 +78,12 @@ function App() {
         wallet_address: userFriendlyAddress
       })
     });
+    console.log('connected wallet', response);
     if(response.ok) {
-      const result = await response.json();
-      if(result.success) {
-        // TODO: set current user
-        console.log('connected wallet', result);
-        setCurrentUser({
-          ...currentUser!,
-          wallet_address: userFriendlyAddress
-        });
-      }
+      setCurrentUser({
+        ...currentUser!,
+        wallet_address: userFriendlyAddress
+      });
     }
   }
 
