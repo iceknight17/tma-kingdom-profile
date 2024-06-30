@@ -47,8 +47,7 @@ function App() {
     const response = await fetch(GET_BALANCE_API.replace('AAA', addr));
     if(response.status == 200) {
       const result = await response.json();
-      console.log('**************', result);
-      return parseFloat(result.result.balance);
+      return parseInt(result.balance);
     }
     return 0;
   }
@@ -114,6 +113,7 @@ function App() {
       const depositResult = await doDeposit();
       if(depositResult.boc) {
         // TODO: check boc
+        
       }
     }
   }
@@ -138,7 +138,6 @@ function App() {
   }
 
   return (
-    <>
     <div className="w-full h-screen flex flex-col p-6 z-10 relative">
       {!userFriendlyAddress ? 
         <div className='w-full mt-2 flex flex-col flex-1 justify-between'>
@@ -220,7 +219,7 @@ function App() {
               <button
                 type="button"
                 onClick={onWithdraw}
-                className="text-white w-full mt-3 bg-gray-800 hover:bg-gray-900 focus:outline-none font-medium rounded-lg text-xl px-5 py-3 flex-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700"
+                className="text-white w-full mt-3 mb-8 bg-gray-800 hover:bg-gray-900 focus:outline-none font-medium rounded-lg text-xl px-5 py-3 flex-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700"
               >
                 Withdraw
               </button>
@@ -229,7 +228,6 @@ function App() {
         </div>)
       }
     </div>
-  </>
   );
 }
 
