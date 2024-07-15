@@ -19,8 +19,8 @@ function App() {
   const DESTINATION_WALLET_ADDRESS = import.meta.env.VITE_DESTINATION_WALLET_ADDRESS;
 
   useEffect(() => {
+    console.log('<<<>>>', initData, WebApp);
     if(initData && !currentUser?.wallet_address) {
-      console.log('<<<>>>', initData, currentUser);
       fetchCurrentUser(initData.user);
     }
   }, [initData, currentUser]);
