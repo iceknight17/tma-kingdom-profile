@@ -8,7 +8,7 @@ import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui
 
 function App() {
   const {currentUser, setCurrentUser} = useUserStore();
-  const [balance, setBalance] = useState<number>(3000);
+  const [balance, setBalance] = useState<number>(0);
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const MIN = 200, MAX = 100000;
@@ -18,26 +18,37 @@ function App() {
   const GET_BALANCE_API = import.meta.env.VITE_GET_BALANCE_API;
   const DESTINATION_WALLET_ADDRESS = import.meta.env.VITE_DESTINATION_WALLET_ADDRESS;
 
+  useEffect(() =>{
+    const storedUser = localStorage.getItem('current_user');
+    if(storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   useEffect(() => {
     console.log('<<<>>>', initData, WebApp);
-    if(initData && !currentUser?.wallet_address) {
+    if(initData && !currentUser) {
       fetchCurrentUser(initData.user);
     }
   }, [initData, currentUser]);
 
   useEffect(() => {
     if(userFriendlyAddress) {
-      onConnectWallet();
+      if(currentUser && !currentUser.wallet_address) {
+        onConnectWallet();
+      }else{
+        getBalance(currentUser?.wallet_address!).then((bal) => {
+          setBalance(bal);
+        });
+      }
     }
   }, [userFriendlyAddress]);
   
-  const getBanace = async (addr: string): Promise<number> => {
+  const getBalance = async (addr: string): Promise<number> => {
     const response = await fetch(GET_BALANCE_API.replace('AAA', addr));
-    if(response.ok) {
+    if(response.status == 200) {
       const result = await response.json();
-      if (result.ok) {
-        return parseFloat(result.result.balance);
-      }
+      return parseInt(result.balance);
     }
     return 0;
   }
@@ -50,17 +61,16 @@ function App() {
       },
       body: JSON.stringify(user)
     });
-    if(response.ok) {
+    console.log('response', response);
+    if(response.status == 200) {
       const result = await response.json();
-      if(result.success) {
-        // TODO: set current user
-        console.log('result', result);
-      }
+      localStorage.setItem('current_user', JSON.stringify(result));
+      setCurrentUser(result);
     }
   }
 
   const onConnectWallet = async () => {
-    getBanace(userFriendlyAddress).then((bal) => {
+    getBalance(userFriendlyAddress).then((bal) => {
       setBalance(bal);
     });
     const response = await fetch(`${import.meta.env.VITE_API_URL}/setwallet`, {
@@ -73,20 +83,17 @@ function App() {
         wallet_address: userFriendlyAddress
       })
     });
-    if(response.ok) {
-      const result = await response.json();
-      if(result.success) {
-        // TODO: set current user
-        console.log('connected wallet', result);
-        setCurrentUser({
-          ...currentUser!,
-          wallet_address: userFriendlyAddress
-        });
-      }
+    console.log('connected wallet', response);
+    if(response.status == 200) {
+      setCurrentUser({
+        ...currentUser!,
+        wallet_address: userFriendlyAddress
+      });
     }
   }
 
   const doDeposit = () => {
+    console.log('**************', depositAmount);
     const transaction = {
       validUntil: Math.floor(Date.now() / 1000) + 60,
       messages: [
@@ -100,19 +107,20 @@ function App() {
   }
 
   const onDeposit = async () => {
-    if(MIN < balance && balance > MAX){
+    if(MIN < parseInt(depositAmount) && parseInt(depositAmount) > MAX){
       WebApp.showAlert(`Deposit amount must be less than ${MIN}TON and greater than ${MAX}TON!`);
       return;
     }else{
       const depositResult = await doDeposit();
       if(depositResult.boc) {
         // TODO: check boc
+        
       }
     }
   }
 
   const onWithdraw = async () => {
-    if(MIN < balance && balance > MAX){
+    if(MIN < parseInt(withdrawAmount) && parseInt(withdrawAmount) > MAX){
       WebApp.showAlert(`Withdraw amount must be less than ${MIN}TON and greater than ${MAX}TON!`);
       return;
     }else{
@@ -121,9 +129,9 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({currentUser, withdrawAmount})
       });
-      if(response.ok) {
+      if(response.status == 200) {
         const result = await response.json();
         console.log(result);
       }
@@ -131,7 +139,6 @@ function App() {
   }
 
   return (
-    <>
     <div className="w-full h-screen flex flex-col p-6 z-10 relative">
       {!userFriendlyAddress ? 
         <div className='w-full mt-2 flex flex-col flex-1 justify-between'>
@@ -161,7 +168,7 @@ function App() {
             <div className='w-full flex mt-8 items-center'>
               <div className='flex-1 font-semibold'>Wallet</div>
               <div className='flex-2 text-left flex items-center'>
-                {currentUser.wallet_address!}
+                {`${currentUser.wallet_address!.slice(0, 4)}...${currentUser.wallet_address!.slice(-4)}`}
               </div>
               <svg onClick={() => {tonConnectUI.disconnect()}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className='w-4'>
                 <path d="M272 112v51.6h-96c-26.5 0-48 21.5-48 48v88.6c0 26.5 21.5 48 48 48h96v51.6c0 42.6 51.7 64.2 81.9 33.9l144-143.9c18.7-18.7 18.7-49.1 0-67.9l-144-144C323.8 48 272 69.3 272 112zm192 144L320 400v-99.7H176v-88.6h144V112l144 144zM96 64h84c6.6 0 12 5.4 12 12v24c0 6.6-5.4 12-12 12H96c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h84c6.6 0 12 5.4 12 12v24c0 6.6-5.4 12-12 12H96c-53 0-96-43-96-96V160c0-53 43-96 96-96z"/>
@@ -177,14 +184,14 @@ function App() {
               </svg>
             </div>
             <div className='w-full flex mt-8'>
-              <div className='flex-1 font-semibold'>Stars</div>
+              <div className='flex-1 font-semibold'>Blue Stars</div>
               <div className='flex-2 text-left'>{currentUser.blue_stars.toLocaleString()}</div>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className='rotate-90 w-4'>
                 <path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/>
               </svg>
             </div>
           </div>
-          <div className='w-full flex flex-col gap-3'>
+          <div className='w-full flex flex-col gap-3 mt-12'>
             <div className='w-full'>
               <input
                 type="number"
@@ -213,7 +220,7 @@ function App() {
               <button
                 type="button"
                 onClick={onWithdraw}
-                className="text-white w-full mt-3 bg-gray-800 hover:bg-gray-900 focus:outline-none font-medium rounded-lg text-xl px-5 py-3 flex-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700"
+                className="text-white w-full mt-3 mb-8 bg-gray-800 hover:bg-gray-900 focus:outline-none font-medium rounded-lg text-xl px-5 py-3 flex-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700"
               >
                 Withdraw
               </button>
@@ -222,7 +229,6 @@ function App() {
         </div>)
       }
     </div>
-  </>
   );
 }
 
